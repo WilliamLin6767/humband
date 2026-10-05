@@ -1,0 +1,15 @@
+{
+  "name": "humband",
+  "version": "1.0.0",
+  "description": "Hum a melody and get a band. Pitch tracking, harmonization and groove generation that run entirely in the browser.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes http-server . -p 5173 -c-1",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

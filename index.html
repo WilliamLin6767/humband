@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HumBand</title>
+    <meta name="description" content="Hum a melody and HumBand turns it into notes, then writes chords, bass and drums that fit." />
+    <meta name="theme-color" content="#2a1f1a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a1f1a'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23f0503f'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="src/main.js"></script>
+  </head>
+  <body data-phase="idle">
+    <div class="wrap">
+      <header class="top">
+        <span class="wordmark">HumBand</span>
+        <a class="top-link" href="#how">How it works</a>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="title">
+          <h1 id="title">Hum a melody. <span>Get a whole band.</span></h1>
+          <p class="lede">
+            HumBand turns your humming into notes, then writes chords, bass and drums that fit what you hummed.
+            Everything runs in your browser.
+          </p>
+
+          <div class="deck">
+            <div class="rec-col">
+              <button id="rec-btn" class="rec" type="button" aria-label="Start recording">
+                <span class="rec-dot" aria-hidden="true"></span>
+              </button>
+              <span id="rec-label" class="rec-label" aria-hidden="true">Record</span>
+            </div>
+
+            <div class="deck-body">
+              <p id="rec-status" class="status" aria-live="polite"></p>
+              <div class="scope">
+                <canvas id="live-canvas" aria-label="Live pitch of your voice"></canvas>
+                <div class="tuner" aria-hidden="true">
+                  <span id="live-note" class="tuner-note"></span>
+                  <span id="live-cents" class="tuner-cents"></span>
+                </div>
+              </div>
+              <div class="controls">
+                <label class="switch">
+                  <input id="metronome" type="checkbox" checked />
+                  <span>Metronome</span>
+                </label>
+                <div id="tempo-field" class="field">
+                  <label class="field-label" for="bpm">Tempo</label>
+                  <div class="stepper">
+                    <button type="button" data-bpm-step="-5" aria-label="Slower">−</button>
+                    <input id="bpm" type="number" min="60" max="180" step="1" value="100" inputmode="numeric" />
+                    <button type="button" data-bpm-step="5" aria-label="Faster">+</button>
+                  </div>
+                  <span class="field-unit">BPM</span>
+                </div>
+                <div id="bars-field" class="field">
+                  <span class="field-label" id="bars-label">Length</span>
+                  <div id="bars-seg" class="seg" role="radiogroup" aria-labelledby="bars-label">
+                    <button type="button" role="radio" data-bars="2">2 bars</button>
+                    <button type="button" role="radio" data-bars="4">4 bars</button>
+                    <button type="button" role="radio" data-bars="8">8 bars</button>
+                  </div>
+                </div>
+              </div>
+              <button id="demo-btn" class="btn-quiet" type="button">No mic handy? Use a sample hum instead</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="session" class="session" aria-labelledby="session-title" hidden>
+          <h2 id="session-title">Your track</h2>
+
+          <div class="transport">
+            <button id="play-btn" class="play" type="button" aria-pressed="false">
+              <svg class="icon-play" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1l11 6-11 6z" /></svg>
+              <svg class="icon-stop" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="1" /></svg>
+              <span id="play-label">Play</span>
+            </button>
+            <div class="readout-block">
+              <p id="readout" class="readout"></p>
+              <p id="tuning" class="tuning"></p>
+            </div>
+            <div id="tempo-tools" class="tempo-tools" hidden>
+              <button id="half-time" class="btn" type="button">Half tempo</button>
+              <button id="double-time" class="btn" type="button">Double tempo</button>
+              <button id="shift-beat" class="btn" type="button">Move bar line</button>
+            </div>
+          </div>
+
+          <div class="screen">
+            <canvas id="roll" aria-label="Piano roll of your track"></canvas>
+          </div>
+          <p class="hint">
+            The pale line is your voice. Click the grid to add a melody note, or click a note to remove it.
+            <button id="undo-edits" class="btn-quiet" type="button" hidden>Undo my edits</button>
+          </p>
+
+          <div class="arrange">
+            <div class="field">
+              <span class="field-label" id="style-label">Style</span>
+              <div id="style-seg" class="seg" role="radiogroup" aria-labelledby="style-label"></div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="creativity">Creativity</label>
+              <input id="creativity" class="slider" type="range" min="0" max="100" value="45" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="key-select">Key</label>
+              <select id="key-select"></select>
+            </div>
+            <div class="field">
+              <span class="field-label" id="rate-label">Chords</span>
+              <div id="rate-seg" class="seg" role="radiogroup" aria-labelledby="rate-label">
+                <button type="button" role="radio" data-rate="1">One per bar</button>
+                <button type="button" role="radio" data-rate="2">Two per bar</button>
+              </div>
+            </div>
+            <label class="switch">
+              <input id="snap" type="checkbox" checked />
+              <span>Snap notes to key</span>
+            </label>
+            <button id="shuffle-btn" class="btn" type="button">Shuffle every part</button>
+          </div>
+
+          <div class="strips">
+            <div class="strip" data-track="hum" style="--track: var(--c-hum)">
+              <div class="strip-head"><span class="strip-num">1</span><span class="strip-name">Your hum</span></div>
+              <div class="strip-body"><p>Your original take, lined up with the beat.</p></div>
+              <input type="range" min="0" max="100" value="80" />
+              <button class="mute" type="button" aria-pressed="false">Mute</button>
+            </div>
+            <div class="strip" data-track="melody" style="--track: var(--c-melody)">
+              <div class="strip-head"><span class="strip-num">2</span><span class="strip-name">Melody</span></div>
+              <div class="strip-body">
+                <select id="lead-select" aria-label="Melody instrument"></select>
+                <div class="octave">
+                  <button type="button" class="btn btn-small" data-octave="-1" aria-label="Octave down">−</button>
+                  <span id="octave-value">As hummed</span>
+                  <button type="button" class="btn btn-small" data-octave="1" aria-label="Octave up">+</button>
+                </div>
+              </div>
+              <input type="range" min="0" max="100" value="100" />
+              <button class="mute" type="button" aria-pressed="false">Mute</button>
+            </div>
+            <div class="strip" data-track="chords" style="--track: var(--c-chords)">
+              <div class="strip-head"><span class="strip-num">3</span><span class="strip-name">Chords</span></div>
+              <div class="strip-body">
+                <p><span id="keys-label"></span><br /><span id="chords-list" class="chords-list"></span></p>
+                <button type="button" class="btn btn-small" data-regen="chords">New chords</button>
+              </div>
+              <input type="range" min="0" max="100" value="70" />
+              <button class="mute" type="button" aria-pressed="false">Mute</button>
+            </div>
+            <div class="strip" data-track="bass" style="--track: var(--c-bass)">
+              <div class="strip-head"><span class="strip-num">4</span><span class="strip-name">Bass</span></div>
+              <div class="strip-body">
+                <p>Locks to the kick drum and walks into each chord.</p>
+                <button type="button" class="btn btn-small" data-regen="bass">New bass line</button>
+              </div>
+              <input type="range" min="0" max="100" value="85" />
+              <button class="mute" type="button" aria-pressed="false">Mute</button>
+            </div>
+            <div class="strip" data-track="drums" style="--track: var(--c-drums)">
+              <div class="strip-head"><span class="strip-num">5</span><span class="strip-name">Drums</span></div>
+              <div class="strip-body">
+                <button type="button" class="btn btn-small" data-regen="drums">New groove</button>
+                <label class="switch switch-small">
+                  <input id="neural" type="checkbox" />
+                  <span>Neural drums</span>
+                </label>
+              </div>
+              <input type="range" min="0" max="100" value="85" />
+              <button class="mute" type="button" aria-pressed="false">Mute</button>
+            </div>
+          </div>
+          <p class="hint">Space plays and stops. Keys 1 to 5 mute tracks.</p>
+
+          <div class="exports">
+            <button id="midi-btn" class="btn" type="button">Download MIDI</button>
+            <button id="wav-btn" class="btn" type="button">Download WAV</button>
+            <button id="again-btn" class="btn-quiet" type="button">Record a new hum</button>
+          </div>
+        </section>
+
+        <section id="how" class="how" aria-labelledby="how-title">
+          <h2 id="how-title">How it works</h2>
+          <ol>
+            <li>
+              <h3>Pitch tracking</h3>
+              <p>The YIN algorithm measures your pitch 100 times a second, then works out how sharp or flat you hum overall.</p>
+            </li>
+            <li>
+              <h3>Notes</h3>
+              <p>Pitch jumps and small dips in volume mark where notes start. Each note snaps to the nearest 16th and to the key.</p>
+            </li>
+            <li>
+              <h3>Chords</h3>
+              <p>A hidden Markov model picks chords that fit your notes and flow into each other, including the loop back to the top.</p>
+            </li>
+            <li>
+              <h3>Groove</h3>
+              <p>The drums put kicks where you started notes, and the bass locks to the kick. Neural drums use Google's Magenta model.</p>
+            </li>
+          </ol>
+        </section>
+      </main>
+
+      <footer>Your recordings never leave your device.</footer>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
